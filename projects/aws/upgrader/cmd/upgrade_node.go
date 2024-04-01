@@ -20,10 +20,6 @@ var upgradeNodeCmd = &cobra.Command{
 
 		nodeType := viper.GetString("type")
 		k8sVersion := viper.GetString("k8sVersion")
-		if k8sVersion == "" {
-			return errors.New("k8sVersion flag has to be set for upgrade node command")
-		}
-
 		etcdVersion := viper.GetString("etcdVersion")
 		if etcdVersion == "" {
 			etcdVersion = "NO_UPDATE"
@@ -41,7 +37,7 @@ func init() {
 	var err error
 
 	upgradeCmd.AddCommand(upgradeNodeCmd)
-	upgradeNodeCmd.Flags().String("type", "", "Node type flag")
+	upgradeNodeCmd.Flags().String("type", "", "node type flag")
 	upgradeNodeCmd.Flags().String("k8sVersion", "", "kubernetes version flag")
 	upgradeNodeCmd.Flags().String("etcdVersion", "", "etcd version flag")
 	err = viper.BindPFlags(upgradeNodeCmd.Flags())
@@ -55,6 +51,9 @@ func upgradeNode(ctx context.Context, nodeType, k8sVersion, etcdVersion string) 
 
 	switch nodeType {
 	case "FirstCP":
+		if k8sVersion == "" {
+			return errors.New("k8sVersion flag has to be set for upgrade node command")
+		}
 		if err := upg.KubeAdmInFirstCP(ctx); err != nil {
 			return fmt.Errorf("upgrading kubeadm in first controlplane node: %v", err)
 		}
