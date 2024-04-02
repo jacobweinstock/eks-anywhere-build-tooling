@@ -50,7 +50,7 @@ func (u *Upgrader) KubeletKubectlUpgrade(ctx context.Context) error {
 
 	// KubeletCredentialProviders support became GA in k8s v1.26, and the feature gate was removed in k8s v1.28.
 	// For in-place upgrades, we should remove this feature gate if it exists on nodes running k8s v1.26 and above.
-	if strings.Contains(kubeVersionStr, "v1.25") {
+	if !strings.Contains(kubeVersionStr, "v1.25") {
 		if err := u.updateKubeletExtraArgs(cmpDir); err != nil {
 			return fmt.Errorf("updating kubelet extra args: %v", err)
 		}
