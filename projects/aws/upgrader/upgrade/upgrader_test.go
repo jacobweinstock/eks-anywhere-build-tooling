@@ -1,9 +1,11 @@
 package upgrade_test
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io/fs"
+	"os"
 	"testing"
 
 	upgrade "github.com/aws/eks-anywhere-build-tooling/projects/aws/upgrader/upgrade"
@@ -23,10 +25,36 @@ type upgraderTest struct {
 	s *mock_upgrade.MockSysCalls
 }
 
+func newSysCallsMock(s *mock_upgrade.MockSysCalls) upgrade.SysCalls {
+	return upgrade.SysCalls{
+		WriteFile: func(name string, data []byte, perm fs.FileMode) error {
+			return s.WriteFile(name, data, perm)
+		},
+		ReadFile: func(name string) ([]byte, error) {
+			return s.ReadFile(name)
+		},
+		OpenFile: func(name string, flag int, perm fs.FileMode) (*os.File, error) {
+			return s.OpenFile(name, flag, perm)
+		},
+		Stat: func(name string) (fs.FileInfo, error) {
+			return s.Stat(name)
+		},
+		Executable: func() (string, error) {
+			return s.Executable()
+		},
+		ExecCommand: func(ctx context.Context, name string, arg ...string) ([]byte, error) {
+			return s.ExecCommand(ctx, name, arg...)
+		},
+		MkdirAll: func(name string, perm fs.FileMode) error {
+			return s.MkdirAll(name, perm)
+		},
+	}
+}
+
 func newUpgraderTest(t *testing.T, options ...upgrade.Option) *upgraderTest {
 	s := mock_upgrade.NewMockSysCalls(gomock.NewController(t))
 	upg := upgrade.NewUpgrader(options...)
-	upg.SysCalls = s
+	upg.SysCalls = newSysCallsMock(s)
 	return &upgraderTest{
 		WithT: NewWithT(t),
 		u:     &upg,

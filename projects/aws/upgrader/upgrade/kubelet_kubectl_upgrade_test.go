@@ -19,7 +19,7 @@ func TestKubeletKubectlUpgrade(t *testing.T) {
 	tt.s.EXPECT().ExecCommand(ctx, "systemctl", "stop", "kubelet").Return(nil, nil)
 	tt.s.EXPECT().Stat(fmt.Sprintf("%s/%s.bk", upgCompBinDir, "kubelet")).Return(nil, nil)
 	tt.s.EXPECT().ExecCommand(ctx, "kubeadm", "version", "-oshort").Return([]byte("v1.25.x"), nil)
-	tt.s.EXPECT().Stat(kubeletConf).Return(nil, os.ErrNotExist)
+	tt.s.EXPECT().Stat(kubeletConf).Return(nil, os.ErrNotExist).AnyTimes()
 	tt.s.EXPECT().ExecCommand(ctx, "systemctl", "daemon-reload").Return(nil, nil)
 	tt.s.EXPECT().ExecCommand(ctx, "systemctl", "restart", "kubelet").Return(nil, nil)
 	tt.u.KubeletKubectlUpgrade(ctx)
